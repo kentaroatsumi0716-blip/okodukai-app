@@ -16,7 +16,6 @@ body{
 
 h1{
     text-align:center;
-    color:#000;
 }
 
 .container{
@@ -34,7 +33,7 @@ h1{
 .card{
     border-radius:15px;
     padding:15px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    box-shadow:0 2px 8px rgba(0,0,0,.1);
 }
 
 .aoi{
@@ -65,17 +64,19 @@ button{
     margin-bottom:8px;
     border:none;
     border-radius:8px;
-    cursor:pointer;
     font-size:16px;
-    color:#000;
+    cursor:pointer;
 }
 
 .job-btn{
     background:#fff;
+    color:#000;
 }
 
-.job-btn:hover{
-    background:#f0f0f0;
+.bonus-btn{
+    background:#dcfce7;
+    color:#166534;
+    font-weight:bold;
 }
 
 .penalty-btn{
@@ -84,13 +85,9 @@ button{
     font-weight:bold;
 }
 
-.penalty-btn:hover{
-    background:#fecaca;
-}
-
 .reset-btn{
     background:#ef4444;
-    color:#fff;
+    color:white;
 }
 
 .history{
@@ -100,7 +97,6 @@ button{
     padding:10px;
     max-height:300px;
     overflow-y:auto;
-    color:#000;
 }
 
 .month-block{
@@ -117,41 +113,41 @@ button{
 
 <div class="container">
 
-    <div class="card aoi">
-        <div class="name">🔵 碧唯</div>
+<div class="card aoi">
+    <div class="name">🔵 碧唯</div>
 
-        <div>今日の合計</div>
-        <div class="total" id="aoiToday">0円</div>
+    <div>今日の合計</div>
+    <div class="total" id="aoiToday">0円</div>
 
-        <div>今月の合計</div>
-        <div class="total" id="aoiMonth">0円</div>
+    <div>今月の合計</div>
+    <div class="total" id="aoiMonth">0円</div>
 
-        <div id="aoiJobs"></div>
+    <div id="aoiJobs"></div>
 
-        <button class="reset-btn" onclick="resetChild('aoi')">
-            履歴リセット
-        </button>
+    <button class="reset-btn" onclick="resetChild('aoi')">
+        履歴リセット
+    </button>
 
-        <div class="history" id="aoiHistory"></div>
-    </div>
+    <div class="history" id="aoiHistory"></div>
+</div>
 
-    <div class="card yume">
-        <div class="name">🟡 優芽</div>
+<div class="card yume">
+    <div class="name">🟡 優芽</div>
 
-        <div>今日の合計</div>
-        <div class="total" id="yumeToday">0円</div>
+    <div>今日の合計</div>
+    <div class="total" id="yumeToday">0円</div>
 
-        <div>今月の合計</div>
-        <div class="total" id="yumeMonth">0円</div>
+    <div>今月の合計</div>
+    <div class="total" id="yumeMonth">0円</div>
 
-        <div id="yumeJobs"></div>
+    <div id="yumeJobs"></div>
 
-        <button class="reset-btn" onclick="resetChild('yume')">
-            履歴リセット
-        </button>
+    <button class="reset-btn" onclick="resetChild('yume')">
+        履歴リセット
+    </button>
 
-        <div class="history" id="yumeHistory"></div>
-    </div>
+    <div class="history" id="yumeHistory"></div>
+</div>
 
 </div>
 
@@ -164,6 +160,7 @@ const jobs = [
     {name:"皿洗い",money:20},
     {name:"トイレ掃除",money:50},
     {name:"テレビ台拭き掃除",money:20},
+    {name:"ボーナス",money:100},
     {name:"減給",money:-50}
 ];
 
@@ -184,7 +181,7 @@ function createButtons(){
     ["aoi","yume"].forEach(child=>{
 
         const area =
-            document.getElementById(child+"Jobs");
+            document.getElementById(child + "Jobs");
 
         area.innerHTML = "";
 
@@ -193,17 +190,20 @@ function createButtons(){
             const btn =
                 document.createElement("button");
 
-            btn.className =
-                job.money < 0
-                ? "job-btn penalty-btn"
-                : "job-btn";
-
-            if(job.money >= 0){
+            if(job.money === 100){
+                btn.className = "bonus-btn";
+                btn.innerHTML =
+                    `💰 ${job.name} (+100円)`;
+            }
+            else if(job.money < 0){
+                btn.className = "penalty-btn";
+                btn.innerHTML =
+                    `🚫 ${job.name} (-50円)`;
+            }
+            else{
+                btn.className = "job-btn";
                 btn.innerHTML =
                     `${job.name} (+${job.money}円)`;
-            }else{
-                btn.innerHTML =
-                    `🚫 ${job.name} (${job.money}円)`;
             }
 
             btn.onclick = ()=>{
@@ -220,6 +220,7 @@ function createButtons(){
 
             area.appendChild(btn);
         });
+
     });
 }
 
@@ -243,9 +244,7 @@ function render(){
             const d =
                 new Date(item.date);
 
-            if(
-                d.toLocaleDateString() === today
-            ){
+            if(d.toLocaleDateString() === today){
                 todayTotal += item.money;
             }
 
@@ -266,16 +265,16 @@ function render(){
             }
 
             monthGroup[monthKey].push(item);
+
         });
 
         document.getElementById(child+"Today")
-            .textContent = todayTotal + "円";
+            .textContent =
+            todayTotal + "円";
 
         document.getElementById(child+"Month")
-            .textContent = monthTotal + "円";
-
-        const historyDiv =
-            document.getElementById(child+"History");
+            .textContent =
+            monthTotal + "円";
 
         let html = "<h3>月別履歴</h3>";
 
@@ -313,8 +312,11 @@ function render(){
             html = "履歴なし";
         }
 
-        historyDiv.innerHTML = html;
+        document.getElementById(child+"History")
+            .innerHTML = html;
+
     });
+
 }
 
 function resetChild(child){
@@ -325,7 +327,9 @@ function resetChild(child){
 
         save();
         render();
+
     }
+
 }
 
 createButtons();
