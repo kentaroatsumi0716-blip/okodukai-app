@@ -51,14 +51,12 @@ h1{
     font-size:24px;
     font-weight:bold;
     margin-bottom:10px;
-    color:#000;
 }
 
 .total{
     font-size:30px;
     font-weight:bold;
     margin-bottom:10px;
-    color:#000;
 }
 
 button{
@@ -78,6 +76,16 @@ button{
 
 .job-btn:hover{
     background:#f0f0f0;
+}
+
+.penalty-btn{
+    background:#fee2e2;
+    color:#b91c1c;
+    font-weight:bold;
+}
+
+.penalty-btn:hover{
+    background:#fecaca;
 }
 
 .reset-btn{
@@ -115,7 +123,6 @@ button{
         <div>今日の合計</div>
         <div class="total" id="aoiToday">0円</div>
 
-        
         <div>今月の合計</div>
         <div class="total" id="aoiMonth">0円</div>
 
@@ -157,7 +164,7 @@ const jobs = [
     {name:"皿洗い",money:20},
     {name:"トイレ掃除",money:50},
     {name:"テレビ台拭き掃除",money:20},
-    {name:"減給",money:-50},
+    {name:"減給",money:-50}
 ];
 
 let data = JSON.parse(localStorage.getItem("allowanceData")) || {
@@ -166,21 +173,38 @@ let data = JSON.parse(localStorage.getItem("allowanceData")) || {
 };
 
 function save(){
-    localStorage.setItem("allowanceData",JSON.stringify(data));
+    localStorage.setItem(
+        "allowanceData",
+        JSON.stringify(data)
+    );
 }
 
 function createButtons(){
 
     ["aoi","yume"].forEach(child=>{
 
-        const area = document.getElementById(child+"Jobs");
+        const area =
+            document.getElementById(child+"Jobs");
+
+        area.innerHTML = "";
 
         jobs.forEach(job=>{
 
-            const btn = document.createElement("button");
+            const btn =
+                document.createElement("button");
 
-            btn.className = "job-btn";
-            btn.innerHTML = `${job.name} (+${job.money}円)`;
+            btn.className =
+                job.money < 0
+                ? "job-btn penalty-btn"
+                : "job-btn";
+
+            if(job.money >= 0){
+                btn.innerHTML =
+                    `${job.name} (+${job.money}円)`;
+            }else{
+                btn.innerHTML =
+                    `🚫 ${job.name} (${job.money}円)`;
+            }
 
             btn.onclick = ()=>{
 
@@ -203,7 +227,11 @@ function render(){
 
     ["aoi","yume"].forEach(child=>{
 
-        const today = new Date().toLocaleDateString();
+        const today =
+            new Date().toLocaleDateString();
+
+        const now =
+            new Date();
 
         let todayTotal = 0;
         let monthTotal = 0;
@@ -212,13 +240,14 @@ function render(){
 
         data[child].forEach(item=>{
 
-            const d = new Date(item.date);
+            const d =
+                new Date(item.date);
 
-            if(d.toLocaleDateString() === today){
+            if(
+                d.toLocaleDateString() === today
+            ){
                 todayTotal += item.money;
             }
-
-            const now = new Date();
 
             if(
                 d.getFullYear() === now.getFullYear() &&
@@ -229,7 +258,8 @@ function render(){
 
             const monthKey =
                 d.getFullYear() + "年" +
-                String(d.getMonth()+1).padStart(2,"0") + "月";
+                String(d.getMonth()+1).padStart(2,"0") +
+                "月";
 
             if(!monthGroup[monthKey]){
                 monthGroup[monthKey] = [];
@@ -238,39 +268,44 @@ function render(){
             monthGroup[monthKey].push(item);
         });
 
-        document.getElementById(child+"Today").textContent =
-            todayTotal + "円";
+        document.getElementById(child+"Today")
+            .textContent = todayTotal + "円";
 
-        document.getElementById(child+"Month").textContent =
-            monthTotal + "円";
+        document.getElementById(child+"Month")
+            .textContent = monthTotal + "円";
 
-        const historyDiv = document.getElementById(child+"History");
+        const historyDiv =
+            document.getElementById(child+"History");
 
         let html = "<h3>月別履歴</h3>";
 
         const months =
-            Object.keys(monthGroup).sort().reverse();
+            Object.keys(monthGroup)
+            .sort()
+            .reverse();
 
         months.forEach(month=>{
 
             let total = 0;
 
-            html += `<div class="month-block">
-                        <strong>${month}</strong><br>`;
+            html += `
+            <div class="month-block">
+            <strong>${month}</strong><br>
+            `;
 
             monthGroup[month].forEach(item=>{
 
                 total += item.money;
 
                 html += `
-                    ${item.job}
-                    (+${item.money}円)<br>
+                ${item.job}
+                (${item.money > 0 ? '+' : ''}${item.money}円)<br>
                 `;
             });
 
             html += `
-                <strong>合計 ${total}円</strong>
-                </div>
+            <strong>合計 ${total}円</strong>
+            </div>
             `;
         });
 
